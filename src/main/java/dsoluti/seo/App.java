@@ -20,57 +20,33 @@ public class App {
 	public static void main(String[] args) {
 
 		VertxOptions vertxOptions = new VertxOptions();
-		vertxOptions.setMaxEventLoopExecuteTime(20000000000L); // 20 seconds
+		vertxOptions.setMaxEventLoopExecuteTime(60000000000L); // 20 seconds
 
 		HttpServer server = Vertx.vertx(vertxOptions).createHttpServer();
 
 		server.requestHandler(request -> {
 
-			String regex = "^(?!.*?(.js|.css|.xml|.less|.png|.jpg|.jpeg|.gif|.pdf|.doc|.txt|.ico|.rss|.zip|.mp3|.rar|.exe|.wmv|.doc|.avi|.ppt|.mpg|.mpeg|.tif|.wav|.mov|.psd|.ai|.xls|.mp4|.m4a|.swf|.dat|.dmg|.iso|.flv|.m4v|.torrent|.ttf|.woff))(.*)";
+			String regex = "^(?!.*?(\\.js|\\.css|\\.xml|\\.less|\\.png|\\.jpg|\\.jpeg|\\.gif|\\.pdf|\\.doc|\\.txt|\\.ico|\\.rss|\\.zip|\\.mp3|\\.rar|\\.exe|\\.wmv|\\.doc|\\.avi|\\.ppt|\\.mpg|\\.mpeg|\\.tif|\\.wav|\\.mov|\\.psd|\\.ai|\\.xls|\\.mp4|\\.m4a|\\.swf|\\.dat|\\.dmg|\\.iso|\\.flv|\\.m4v|\\.torrent|\\.ttf|\\.woff))(.*)";
 
-			String base = "https://www.nextprot.org";
+			//String base = "https://www.nextprot.org";
+			String base = "https://bed-search.nextprot.org";
+
 			String requestedUrl = base +  request.path();
 			
-			System.out.println("Asking for " + requestedUrl);
+			System.out.println("Asking for " + requestedUrl + " and path is " + request.path());
 			
 			if(requestedUrl.matches(regex)){
 
 				System.out.println("Responding with selenium");
 
-				WebDriver driver = null;
-				URL hubUrl = null;
-				try {
-					hubUrl = new URL("http://dockerdev.vital-it.ch:32768/wd/hub");
-				} catch (MalformedURLException e1) {
-					e1.printStackTrace();
-					System.exit(1);
-				}
-
-				driver = new RemoteWebDriver(hubUrl, DesiredCapabilities.chrome());
-
-				// And now use this to visit Google
-				//driver.get(request.absoluteURI());
-				driver.get(requestedUrl);
-
-				// Wait 2 seconds
-				try {
-					Thread.sleep(2000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				String content = driver.getPageSource();
-
-				String contentWithoutJs = content.replaceAll("<script(.|\n)*?</script>", "");
-				String contentWithoutJsAndHtmlImport = contentWithoutJs.replaceAll("<link rel=\"import\".*/>", "");
-
-				request.response().putHeader("content-type", "text/html").end(contentWithoutJsAndHtmlImport);
-
-				driver.quit();
+				String url =  request.absoluteURI().replaceAll("http://localhost:8082", base);
+				String content = WebRemoteDriver.getContent(url);
+				request.response().putHeader("content-type", "text/html").end(content);
 
 
 			}else {
-				System.out.println("Responding with redirect" + requestedUrl);
 
+				System.out.println("Responding with redirect" + requestedUrl);
 				request.response().putHeader("location", requestedUrl).setStatusCode(302).end();
 			}
 
