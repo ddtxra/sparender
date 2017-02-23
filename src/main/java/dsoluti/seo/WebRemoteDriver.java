@@ -38,10 +38,10 @@ public class WebRemoteDriver {
 		htmlCache = cacheManager.getCache("htmlCache", String.class, byte[].class);
 	}
 	
-	public static String getContent(String requestedUrl){
+	public static String getContent(String base, String requestedUrl){
 		
-		if(htmlCache.containsKey(requestedUrl)){
-			return unzip(htmlCache.get(requestedUrl));
+		if(htmlCache.containsKey(base + requestedUrl)){
+			return unzip(htmlCache.get(base + requestedUrl));
 		}
 		
 		WebDriver driver = null;
@@ -81,14 +81,14 @@ public class WebRemoteDriver {
 
 		String contentWithoutJs = content.replaceAll("<script(.|\n)*?</script>", "");
 		String contentWithoutJsAndHtmlImport = contentWithoutJs.replaceAll("<link rel=\"import\".*/>", "");
-		//String contentWithCorrectBase = contentWithoutJsAndHtmlImport.replaceAll("(<base.*?>)", "<base href=\"" + base + "\"/>");
+		String contentWithCorrectBase = contentWithoutJsAndHtmlImport.replaceAll("(<base.*?>)", "<base href=\"" + base + "\"/>");
 		
 		String bootstrapScript = "\n<script src=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js\"></script>";
-		String finalContent = contentWithoutJsAndHtmlImport + "\n" + bootstrapScript;
+		String finalContent = contentWithCorrectBase + "\n" + bootstrapScript;
 		
 		driver.quit();
 
-		htmlCache.put(requestedUrl, zip(finalContent));
+		htmlCache.put(base + requestedUrl, zip(finalContent));
 		return finalContent;
 
 	}
