@@ -10,6 +10,10 @@ services:
     image: "selenium/standalone-chrome"
     ports:
       - "4444:4444"
+    extra_hosts:
+       - "www.nextprot.org:10.0.30.90"
+       - "api.nextprot.org:10.0.30.90"
+       - "www.google-analytics.com:127.0.0.1"
   mongo:
     image: "mongo:3"
   elasticsearch:
@@ -27,4 +31,3 @@ services:
     ports:
       - "9000:9000"
       - "5556:5556/udp"
-
