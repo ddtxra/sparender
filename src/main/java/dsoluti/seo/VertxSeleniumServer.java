@@ -4,29 +4,42 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.handler.LoggerFormat;
-import io.vertx.ext.web.handler.impl.LoggerHandlerImpl;
 
 /**
  * Simple HTTP Server that renders HTML pages using Selenium.
  * 
  */
-public class App {
+public class VertxSeleniumServer extends AbstractVerticle {
+	
+	
+	static final String BASE_URL;
+	static {
+		String sysPropName = "base.url";
+		if ((System.getProperty(sysPropName) == null)) {
+			BASE_URL = "https://www.nextprot.org";
+			System.out.println("Setting default " + sysPropName + " " + BASE_URL);
+		} else {
+			BASE_URL = System.getProperty(sysPropName);
+			System.out.println("Setting defined " + sysPropName + " " + BASE_URL);
+		}
+	}
 
 	static final String regexToGetUrl = "http.\\/\\/.*?\\/(.*)";
 	static final String regexToGetDomain = "(http.:\\/\\/.*?\\/)";
 	static final Pattern patternToGetUrl = Pattern.compile(regexToGetUrl);
 	static final Pattern patternToGetDomain = Pattern.compile(regexToGetDomain);
 
-    private static final Logger LOGGER = Logger.getLogger(App.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(VertxSeleniumServer.class.getName());
 
-	public static void main(String[] args) {
-
+    @Override
+    public void start() throws Exception {
+    	
 		VertxOptions vertxOptions = new VertxOptions();
 		vertxOptions.setMaxEventLoopExecuteTime(60000000000L); // 60 seconds
 
@@ -44,7 +57,7 @@ public class App {
 			routingContext.response().setStatusCode(404).end();
 		});
 		
-		router.route().handler(new LoggerHandlerImpl(LoggerFormat.DEFAULT));
+		router.route().handler(new GelfLoggerHandler());
 		router.route().blockingHandler(routingContext -> {
 			
 			HttpServerRequest request = routingContext.request();
@@ -69,7 +82,7 @@ public class App {
 				}else {
 
 					//TODO requestedDomain should be used here...
-					String content = WebRemoteDriver.getContent("https://bed-search.nextprot.org/", requestedUrl);
+					String content = WebRemoteDriver.getContent(BASE_URL, requestedUrl);
 					request.response().putHeader("content-type", "text/html").end(content);
 
 				}
@@ -87,7 +100,7 @@ public class App {
 		Integer port = 8082;
 		server.requestHandler(router::accept).listen(port);
 		
-		System.out.println("Listening to port " + port);
+		System.out.println("Listening on port " + port);
 
 	}
 
