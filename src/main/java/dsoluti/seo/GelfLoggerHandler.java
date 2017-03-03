@@ -150,8 +150,8 @@ public class GelfLoggerHandler implements LoggerHandler {
 			keyValueFields.put("referrer", referrer);
 			keyValueFields.put("userAgent", userAgent);
 			keyValueFields.put("elpasedTime", (System.currentTimeMillis() - timestamp));
-			keyValueFields.put("hitCache", ((System.currentTimeMillis() - timestamp) < 1000));//TODO check how to do this, by either checking request param or thread local?
-
+			keyValueFields.put("hitCache", ((System.currentTimeMillis() - timestamp) < WebRemoteDriver.TIME_TO_WAIT_FOR_RENDER));
+			
 			break;
 		case SHORT:
 			message = String.format("%s - %s %s %s %d %d - %d ms", remoteClient, method, uri, versionFormatted, status, contentLength, (System.currentTimeMillis() - timestamp));
