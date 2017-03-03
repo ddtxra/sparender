@@ -25,17 +25,9 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class WebRemoteDriver {
 
-	static final String SELENIUM_URL;
-	static {
-		String sysPropName = "selenium.url";
-		if ((System.getProperty(sysPropName) == null)) {
-			SELENIUM_URL = "http://localhost:4444/wd/hub";
-			System.out.println("Setting default " + sysPropName + " " + SELENIUM_URL);
-		} else {
-			SELENIUM_URL = System.getProperty(sysPropName);
-			System.out.println("Setting defined " + sysPropName + " " + SELENIUM_URL);
-		}
-	}
+	public static final Integer TIME_TO_WAIT_FOR_RENDER = 2000;
+	
+	static final String SELENIUM_URL = App.prop.get("selenium.url");
 
 	static Cache<String, byte[]> htmlCache;
 	static {
@@ -70,6 +62,7 @@ public class WebRemoteDriver {
 			// Waits for active connections to finish
 			(new WebDriverWait(driver, 50, 1000)).until(new ExpectedCondition<Boolean>() {
 				public Boolean apply(WebDriver d) {
+					//TODO only works with jQuery now, should be optimised
 					Object o = ((JavascriptExecutor) d).executeScript("return ((jQuery)? jQuery.active : 0)");
 					return o.equals(0L);
 				}
@@ -80,10 +73,7 @@ public class WebRemoteDriver {
 		}
 
 		// TODO what to do when no response from docker / selenium (it blocks)
-
-		System.err.println("Finished waiting");
-
-		sleep(2000);
+		sleep(TIME_TO_WAIT_FOR_RENDER);
 
 		String content = driver.getPageSource();
 

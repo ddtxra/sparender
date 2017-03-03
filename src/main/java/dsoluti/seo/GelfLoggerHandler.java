@@ -54,14 +54,8 @@ import io.vertx.ext.web.impl.Utils;
  */
 public class GelfLoggerHandler implements LoggerHandler {
 
-	
-	public static final String GRAYLOG_HOST;
-	public static final int GRAYLOG_PORT;
-
-	static {
-		GRAYLOG_HOST = (System.getProperty("graylog.host") == null) ? "localhost" : System.getProperty("graylog.host");
-		GRAYLOG_PORT = (System.getProperty("graylog.port") == null) ? 5556 : Integer.valueOf(System.getProperty("graylog.port"));
-	}
+	static final String GRAYLOG_HOST = App.prop.get("graylog.host").toString();
+	static final int GRAYLOG_PORT = Integer.valueOf(App.prop.get("graylog.port").toString());
 
 	final GelfConfiguration config;
 	final GelfTransport transport;

@@ -17,19 +17,7 @@ import io.vertx.ext.web.Router;
  */
 public class VertxSeleniumServer extends AbstractVerticle {
 	
-	
-	static final String BASE_URL;
-	static {
-		String sysPropName = "base.url";
-		if ((System.getProperty(sysPropName) == null)) {
-			BASE_URL = "https://www.nextprot.org";
-			System.out.println("Setting default " + sysPropName + " " + BASE_URL);
-		} else {
-			BASE_URL = System.getProperty(sysPropName);
-			System.out.println("Setting defined " + sysPropName + " " + BASE_URL);
-		}
-	}
-
+	static final String BASE_URL = App.prop.get("base.url");
 	static final String regexToGetUrl = "http.\\/\\/.*?\\/(.*)";
 	static final String regexToGetDomain = "(http.:\\/\\/.*?\\/)";
 	static final Pattern patternToGetUrl = Pattern.compile(regexToGetUrl);

@@ -1,5 +1,12 @@
 package dsoluti.seo;
 
+import java.io.BufferedReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Main class used for debug / IDE
  * Launch Verticle with docker instead (try this for debug)
@@ -10,11 +17,24 @@ package dsoluti.seo;
  */
 public class App {
 	
-	public static void main(String[] args) throws Exception {
+	public static Map<String, String> prop = new HashMap<>();
 	
+	public static void main(String[] args) throws Exception {
+
+		Path path = null;
+		path =  Paths.get("config.properties");
+		
+		try(BufferedReader br= Files.newBufferedReader(path)) {
+			br.lines().filter(l -> !l.isEmpty()).filter(l -> !l.startsWith("#")).forEach(l -> {
+				String[] keyValuePair = l.split("=");
+				System.err.println(l);
+				prop.put(keyValuePair[0], keyValuePair[1]);
+			});
+		}
+
 		VertxSeleniumServer server = new VertxSeleniumServer();
 		server.start();
-		
+
 	}
 
 
