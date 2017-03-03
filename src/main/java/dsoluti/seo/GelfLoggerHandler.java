@@ -82,6 +82,7 @@ public class GelfLoggerHandler implements LoggerHandler {
 		this.config = new GelfConfiguration(new InetSocketAddress(GRAYLOG_HOST, GRAYLOG_PORT)).transport(GelfTransports.UDP).queueSize(512).connectTimeout(5000).reconnectDelay(1000).tcpNoDelay(true)
 				.sendBufferSize(32768);
 		this.transport = GelfTransports.create(config);
+		System.err.println("Configuring to send messages to " + GRAYLOG_HOST + ":" + GRAYLOG_PORT);
 
 	}
 

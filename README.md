@@ -5,7 +5,7 @@ Used for SEO optimisation (solving problems related to technology such as: Angul
 Run it:
 ```
 docker-compose build
-docker-compose up
+docker-compose up vertx-selenium-server
 ```
 
 Access your browser at: http://localhost:8082/https://www.nextprot.org/about/human-proteome for an example of plain html file
