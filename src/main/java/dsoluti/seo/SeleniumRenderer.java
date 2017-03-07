@@ -1,8 +1,6 @@
 package dsoluti.seo;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -10,8 +8,6 @@ import java.util.concurrent.Future;
 
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.remote.DesiredCapabilities;
-import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -22,10 +18,16 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 public class SeleniumRenderer {
 
 	public static final Integer TIME_TO_WAIT_FOR_RENDER = 2000;
-	static final String SELENIUM_URL = App.prop.get("selenium.url");
 
+	private DriverPool driverPool;
 	private final ExecutorService pool = Executors.newFixedThreadPool(3);
-	private final String base = "https://www.nextprot.org";
+	public static String base = "https://www.nextprot.org";
+	
+	public SeleniumRenderer(){
+		System.err.println("Starting driver pool");
+		driverPool = new DriverPool(3);
+		System.err.println("Pool started");
+	}
 
 	public Future<String> startRendering(final String requestedUrl) throws IOException {
 		return pool.submit(new Callable<String>() {
@@ -34,23 +36,13 @@ public class SeleniumRenderer {
 
 				if (!ContentCache.contentExists(base, requestedUrl)) {
 
-					WebDriver driver = null;
-					URL hubUrl = null;
+					WebDriver driver = driverPool.borrowObject();
 
-					try {
-						hubUrl = new URL(SELENIUM_URL);
-					} catch (MalformedURLException e1) {
-						e1.printStackTrace();
-						System.exit(1);
-					}
-
-					driver = new RemoteWebDriver(hubUrl, DesiredCapabilities.chrome());
-					System.err.println("Requesting " + requestedUrl);
 					driver.get(requestedUrl);
 					sleep(1000);
 					final long start = System.currentTimeMillis();
 
-					try {
+					/*try {
 						// Waits for active connections to finish
 						(new WebDriverWait(driver, 50, 1000)).until(new ExpectedCondition<Boolean>() {
 							public Boolean apply(WebDriver d) {
@@ -64,7 +56,9 @@ public class SeleniumRenderer {
 
 					} catch (org.openqa.selenium.TimeoutException timeout) {
 						System.err.println("Not finished ... after timeout !!! ");
-					}
+					}*/
+					
+					sleep(1000);
 
 					long total = (System.currentTimeMillis() - start);
 					
@@ -83,7 +77,7 @@ public class SeleniumRenderer {
 
 					String finalContent = contentWithCorrectBase;
 
-					driver.quit();
+					driverPool.returnObject(driver);
 
 					ContentCache.putContent(base, requestedUrl, finalContent);
 				}

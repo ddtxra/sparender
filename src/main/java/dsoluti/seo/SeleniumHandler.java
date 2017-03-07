@@ -29,17 +29,26 @@ public class SeleniumHandler extends AbstractHandler implements Handler {
 
 		final String requestUrl = request.getPathInfo().substring(1).replace("?_escaped_fragment_=", "");
 		
-		System.err.println("Received a new request" + requestUrl);
+		System.err.println("Received a new request: " + requestUrl);
 
 		if (!requestUrl.startsWith("http")) {
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-			out.println("Expecting a URL starting with http at this stage, got:" + requestUrl);
+			if(!requestUrl.startsWith("favicon.ico")){
+				out.println("Expecting a URL starting with http at this stage, got:" + requestUrl);
+				System.err.println("Responding with bad request for " + requestUrl);
+			}
 
 		} else {
 
 			try {
-				Future<String> content = seleniumRenderer.startRendering(requestUrl);
-				out.println(content.get());
+				
+				if (ContentCache.contentExists(SeleniumRenderer.base, requestUrl)) {
+					out.println(ContentCache.getContent(SeleniumRenderer.base, requestUrl));
+				}else {
+					Future<String> content = seleniumRenderer.startRendering(requestUrl);
+					out.println(content.get());
+				}
+				
 			} catch (Exception e) {
 				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 				out.println("Failed to render " + requestUrl + " " + e.getMessage());
