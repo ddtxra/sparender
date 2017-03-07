@@ -28,6 +28,8 @@ public class SeleniumHandler extends AbstractHandler implements Handler {
 		PrintWriter out = response.getWriter();
 
 		final String requestUrl = request.getPathInfo().substring(1).replace("?_escaped_fragment_=", "");
+		
+		System.err.println("Received a new request" + requestUrl);
 
 		if (!requestUrl.startsWith("http")) {
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
