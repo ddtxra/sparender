@@ -36,11 +36,14 @@ public class SeleniumRenderer {
 
 				if (!ContentCache.contentExists(base, requestedUrl)) {
 
-					WebDriver driver = driverPool.borrowObject();
-
-					driver.get(requestedUrl);
-					sleep(1000);
 					final long start = System.currentTimeMillis();
+
+					WebDriver driver = driverPool.borrowObject();
+					System.err.println("Starting to get the page " + (System.currentTimeMillis() - start) + " ms");
+					driver.get(requestedUrl);
+					System.err.println("Time to get the page " + (System.currentTimeMillis() - start) + " ms");
+
+					sleep(1000);
 
 					/*try {
 						// Waits for active connections to finish
@@ -57,16 +60,6 @@ public class SeleniumRenderer {
 					} catch (org.openqa.selenium.TimeoutException timeout) {
 						System.err.println("Not finished ... after timeout !!! ");
 					}*/
-					
-					sleep(1000);
-
-					long total = (System.currentTimeMillis() - start);
-					
-					System.err.println("Total time was " + total + " ms");
-
-					// Sleep the same time as the total
-					sleep(total / 5);
-					System.err.println("Total time given for rendering " + (System.currentTimeMillis() - start) + " ms");
 
 					String content = driver.getPageSource();
 
@@ -79,9 +72,12 @@ public class SeleniumRenderer {
 
 					driverPool.returnObject(driver);
 
+					System.err.println("Finished in " + (System.currentTimeMillis() - start) + " ms");
+
 					ContentCache.putContent(base, requestedUrl, finalContent);
 				}
 
+				
 				return ContentCache.getContent(base, requestedUrl);
 
 			}
