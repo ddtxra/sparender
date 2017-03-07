@@ -151,7 +151,7 @@ public class GelfLoggerHandler implements LoggerHandler {
 			keyValueFields.put("referrer", referrer);
 			keyValueFields.put("userAgent", userAgent);
 			keyValueFields.put("elpasedTime", (System.currentTimeMillis() - timestamp));
-			keyValueFields.put("hitCache", ((System.currentTimeMillis() - timestamp) < WebRemoteDriver.TIME_TO_WAIT_FOR_RENDER));
+			keyValueFields.put("hitCache", ((System.currentTimeMillis() - timestamp) < SeleniumVerticle.TIME_TO_WAIT_FOR_RENDER));
 			
 			break;
 		case SHORT:

@@ -7,6 +7,8 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.vertx.core.Vertx;
+
 /**
  * Main class used for debug / IDE
  * Launch Verticle with docker instead (try this for debug)
@@ -32,8 +34,13 @@ public class App {
 			});
 		}
 
+        Vertx vertx = Vertx.vertx();
 		VertxSeleniumServer server = new VertxSeleniumServer();
-		server.start();
+		vertx.deployVerticle(server);
+
+		for(int i=0; i<10; i++){
+			vertx.deployVerticle(new SeleniumVerticle());
+		}
 
 	}
 
