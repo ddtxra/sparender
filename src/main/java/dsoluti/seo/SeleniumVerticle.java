@@ -45,13 +45,16 @@ public class SeleniumVerticle extends AbstractVerticle {
     		}
 
     		driver = new RemoteWebDriver(hubUrl, DesiredCapabilities.chrome());
+			System.err.println("Requesting " + requestedUrl);
     		driver.get(requestedUrl);
     		sleep(1000);
+    		final long start = System.currentTimeMillis();
 
     		try {
     			// Waits for active connections to finish
     			(new WebDriverWait(driver, 50, 1000)).until(new ExpectedCondition<Boolean>() {
     				public Boolean apply(WebDriver d) {
+    					System.err.println("Waiting since" + (System.currentTimeMillis() - start) + " ms");
     					//TODO only works with jQuery now, should be optimised
     					Object o = ((JavascriptExecutor) d).executeScript("return ((jQuery)? jQuery.active : 0)");
     					return o.equals(0L);
