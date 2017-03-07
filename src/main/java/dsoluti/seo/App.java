@@ -7,26 +7,26 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.vertx.core.Vertx;
+import org.eclipse.jetty.server.Server;
 
 /**
- * Main class used for debug / IDE
- * Launch Verticle with docker instead (try this for debug)
- * See documentation here: http://vertx.io/docs/vertx-docker/#_deploying_a_java_verticle_in_a_docker_container
+ * Main class used for debug / IDE Launch Verticle with docker instead (try this
+ * for debug) See documentation here:
+ * http://vertx.io/docs/vertx-docker/#_deploying_a_java_verticle_in_a_docker_container
  * 
  * @author Daniel Teixeira http://github.com/ddtxra
  *
  */
 public class App {
-	
+
 	public static Map<String, String> prop = new HashMap<>();
-	
+
 	public static void main(String[] args) throws Exception {
 
 		Path path = null;
-		path =  Paths.get("config.properties");
-		
-		try(BufferedReader br= Files.newBufferedReader(path)) {
+		path = Paths.get("config.properties");
+
+		try (BufferedReader br = Files.newBufferedReader(path)) {
 			br.lines().filter(l -> !l.isEmpty()).filter(l -> !l.startsWith("#")).forEach(l -> {
 				String[] keyValuePair = l.split("=");
 				System.err.println(l);
@@ -34,15 +34,12 @@ public class App {
 			});
 		}
 
-        Vertx vertx = Vertx.vertx();
-		VertxSeleniumServer server = new VertxSeleniumServer();
-		vertx.deployVerticle(server);
+		Server server = new Server(8082);
+		server.setHandler(new SeleniumHandler());
 
-		for(int i=0; i<10; i++){
-			vertx.deployVerticle(new SeleniumVerticle());
-		}
+		server.start();
+		server.join();
 
 	}
-
 
 }

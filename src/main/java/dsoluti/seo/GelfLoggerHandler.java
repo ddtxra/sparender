@@ -1,57 +1,7 @@
 package dsoluti.seo;
 
-import java.net.InetSocketAddress;
-import java.text.DateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.graylog2.gelfclient.GelfConfiguration;
-import org.graylog2.gelfclient.GelfMessage;
-import org.graylog2.gelfclient.GelfMessageBuilder;
-import org.graylog2.gelfclient.GelfTransports;
-import org.graylog2.gelfclient.transport.GelfTransport;
 
 /*
- * Copyright 2014 Red Hat, Inc.
- *
- *  All rights reserved. This program and the accompanying materials
- *  are made available under the terms of the Eclipse Public License v1.0
- *  and Apache License v2.0 which accompanies this distribution.
- *
- *  The Eclipse Public License is available at
- *  http://www.eclipse.org/legal/epl-v10.html
- *
- *  The Apache License v2.0 is available at
- *  http://www.opensource.org/licenses/apache2.0.php
- *
- *  You may elect to redistribute this code under either of these licenses.
- */
-
-import io.vertx.core.http.HttpMethod;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.http.HttpVersion;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.net.SocketAddress;
-import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.handler.LoggerFormat;
-import io.vertx.ext.web.handler.LoggerHandler;
-import io.vertx.ext.web.impl.Utils;
-
-/**
- * # Logger
- *
- * Logger for request. There are 3 formats included: 1. DEFAULT 2. SHORT 3. TINY
- *
- * Default tries to log in a format similar to Apache log format, while the
- * other 2 are more suited to development mode. The logging depends on Vert.x
- * logger settings and the severity of the error, so for errors with status
- * greater or equal to 500 the fatal severity is used, for status greater or
- * equal to 400 the error severity is used, for status greater or equal to 300
- * warn is used and for status above 100 info is used.
- *
- * @author <a href="http://pmlopes@gmail.com">Paulo Lopes</a>
- */
 public class GelfLoggerHandler implements LoggerHandler {
 
 	static final String GRAYLOG_HOST = App.prop.get("graylog.host").toString();
@@ -60,20 +10,8 @@ public class GelfLoggerHandler implements LoggerHandler {
 	final GelfConfiguration config;
 	final GelfTransport transport;
 	private final io.vertx.core.logging.Logger logger = LoggerFactory.getLogger(this.getClass());
-
-	/**
-	 * The Date formatter (UTC JS compatible format)
-	 */
 	private final DateFormat dateTimeFormat = Utils.createRFC1123DateTimeFormatter();
-
-	/**
-	 * log before request or after
-	 */
 	private final boolean immediate;
-
-	/**
-	 * the current choosen format
-	 */
 	private final LoggerFormat format;
 
 	public GelfLoggerHandler(boolean immediate, LoggerFormat format) {
@@ -151,7 +89,7 @@ public class GelfLoggerHandler implements LoggerHandler {
 			keyValueFields.put("referrer", referrer);
 			keyValueFields.put("userAgent", userAgent);
 			keyValueFields.put("elpasedTime", (System.currentTimeMillis() - timestamp));
-			keyValueFields.put("hitCache", ((System.currentTimeMillis() - timestamp) < SeleniumVerticle.TIME_TO_WAIT_FOR_RENDER));
+			keyValueFields.put("hitCache", ((System.currentTimeMillis() - timestamp) < SeleniumRenderer.TIME_TO_WAIT_FOR_RENDER));
 			
 			break;
 		case SHORT:
@@ -204,3 +142,4 @@ public class GelfLoggerHandler implements LoggerHandler {
 
 	}
 }
+*/
