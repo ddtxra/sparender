@@ -1,9 +1,12 @@
 package com.sparender;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -12,7 +15,6 @@ import java.util.TimeZone;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.eclipse.jetty.server.session.SessionHandler;
 import org.graylog2.gelfclient.GelfConfiguration;
 import org.graylog2.gelfclient.GelfMessage;
 import org.graylog2.gelfclient.GelfMessageBuilder;
@@ -46,7 +48,7 @@ public class RequestLogger {
 		this.transport = GelfTransports.create(config);
 	}
 
-	public void log(HttpServletRequest request, HttpServletResponse response, long startTime){
+	public void log(HttpServletRequest request, HttpServletResponse response, String fullUrl, Integer contentLength, Integer bytes, boolean cacheHit, long startTime){
 
 		try {
 			
@@ -54,11 +56,8 @@ public class RequestLogger {
 
 			String remoteClient = request.getRemoteAddr();
 			String method = request.getMethod();
-			String uri = request.getRequestURI();
-			new SessionHandler();
 
 			Map<String, Object> keyValueFields = new HashMap<>();
-			int contentLength = response.getBufferSize();
 
 			String versionFormatted = "-";
 			
@@ -70,18 +69,27 @@ public class RequestLogger {
 			referrer = referrer == null ? "-" : referrer;
 			userAgent = userAgent == null ? "-" : userAgent;
 
-			message = String.format("%s - - [%s] \"%s %s %s\" %d %d  - %d ms \"%s\" \"%s\"", remoteClient, dateTimeFormat.format(new Date(System.currentTimeMillis())), method, uri, versionFormatted, status, contentLength,
+			message = String.format("%s - - [%s] \"%s %s %s\" %d %d  - %d ms \"%s\" \"%s\"", remoteClient, dateTimeFormat.format(new Date(System.currentTimeMillis())), method, fullUrl, versionFormatted, status, contentLength,
 					elapsedTime, referrer, userAgent);
 
 			keyValueFields.put("remoteClient", remoteClient);
 			keyValueFields.put("method", method);
-			keyValueFields.put("uri", uri);
+			keyValueFields.put("full-url", fullUrl);
 			keyValueFields.put("versionFormatted", versionFormatted);
-			keyValueFields.put("contentLength", contentLength);
+			keyValueFields.put("content-length", contentLength);
+			keyValueFields.put("content-bytes", bytes);
 			keyValueFields.put("referrer", referrer);
-			keyValueFields.put("userAgent", userAgent);
-			keyValueFields.put("elpasedTime", elapsedTime);
-			keyValueFields.put("hitCache", (elapsedTime< SeleniumRenderer.TIME_TO_WAIT_FOR_RENDER));
+			keyValueFields.put("user-agent", userAgent);
+			keyValueFields.put("elpased-time", elapsedTime);
+			keyValueFields.put("hit-cache", cacheHit);
+			
+			Enumeration<String> requestHeaders = request.getHeaderNames();
+			while(requestHeaders.hasMoreElements()){
+				String headerName = requestHeaders.nextElement();
+				if(!headerName.equals("Cookie") && !headerName.equals("Authorization")){//Not interested in cookies, auth
+					keyValueFields.put("request-header-" + headerName.toLowerCase(), request.getHeader(headerName));
+				}
+			}
 
 			keyValueFields.put("status", status);
 
@@ -96,7 +104,7 @@ public class RequestLogger {
 				keyValueFields.put("level", "info");
 			}
 
-			final GelfMessageBuilder builder = new GelfMessageBuilder(message, "vertx.selenium.server");
+			final GelfMessageBuilder builder = new GelfMessageBuilder(message, "sparender@" + InetAddress.getLocalHost().getHostName());
 			final GelfMessage gm = builder.additionalFields(keyValueFields).build();
 			transport.trySend(gm);
 
@@ -105,4 +113,6 @@ public class RequestLogger {
 		}
 
 	}
+	
+
 }
