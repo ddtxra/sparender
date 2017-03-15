@@ -64,7 +64,7 @@ public class RequestHandler extends AbstractHandler implements Handler {
 					contentString = Optional.of(cache.getContent(requestUrl));
 				} else {
 					Future<String> content = seleniumRenderer.startRendering(requestUrl);
-					contentString = Optional.of(cache.getContent(requestUrl));
+					contentString = Optional.of(content.get());
 				}
 
 			} catch (Exception e) {
