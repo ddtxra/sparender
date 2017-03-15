@@ -14,6 +14,7 @@ public class DriverPool extends ObjectPool<WebDriver> {
 		super(minIdle);
 	}
 
+	@Override
 	protected WebDriver createObject() {
 		URL hubUrl;
 		try {
@@ -23,6 +24,11 @@ public class DriverPool extends ObjectPool<WebDriver> {
 			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
+	}
+
+	@Override
+	protected void shutdownObject(WebDriver driver) {
+		driver.close();
 	}
 
 }

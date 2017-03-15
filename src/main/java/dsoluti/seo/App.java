@@ -35,7 +35,7 @@ public class App {
 		}
 
 		Server server = new Server(8082);
-		server.setHandler(new SeleniumHandler());
+		server.setHandler(new RequestHandler());
 
 		server.start();
 		server.join();

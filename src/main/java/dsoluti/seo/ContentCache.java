@@ -8,38 +8,35 @@ import java.io.ObjectOutputStream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import org.ehcache.Cache;
-import org.ehcache.CacheManager;
-import org.ehcache.config.builders.CacheConfigurationBuilder;
-import org.ehcache.config.builders.CacheManagerBuilder;
-import org.ehcache.config.builders.ResourcePoolsBuilder;
-import org.ehcache.config.units.MemoryUnit;
+import net.sf.ehcache.Cache;
+import net.sf.ehcache.CacheManager;
+import net.sf.ehcache.Element;
 
 public class ContentCache {
 
-	static Cache<String, byte[]> htmlCache;
-	static {
+	private Cache htmlCache;
+	private CacheManager cm;
 
-		CacheManager cacheManager = CacheManagerBuilder.newCacheManagerBuilder().with(CacheManagerBuilder.persistence("cache")).withCache("htmlCache",
-				CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, byte[].class, ResourcePoolsBuilder.newResourcePoolsBuilder().disk(100, MemoryUnit.GB, true))).build(true);
-
-		htmlCache = cacheManager.getCache("htmlCache", String.class, byte[].class);
-		
+	public ContentCache() {
+		cm = CacheManager.newInstance();
+		htmlCache = cm.getCache("html-cache");
+		addShutdownHook();
 	}
 
-	public static boolean contentExists(String base, String requestedUrl) {
-		return htmlCache.containsKey(base + requestedUrl);
+	public boolean contentExists(String url) {
+		return htmlCache.isKeyInCache(url);
 	}
 
-	public static String getContent(String base, String requestedUrl) {
-		return unzip(htmlCache.get(base + requestedUrl));
-	}
-	
-	public static void putContent(String base, String requestedUrl, String content) {
-		htmlCache.put((base + requestedUrl), zip(content));
+	public String getContent(String url) {
+		Element element = htmlCache.get(url);
+		return unzip((byte[]) element.getObjectValue());
 	}
 
-	private static byte[] zip(String stringToCompress) {
+	public void putContent(String url, String content) {
+		htmlCache.put(new Element(url, zip(content)));
+	}
+
+	private byte[] zip(String stringToCompress) {
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		GZIPOutputStream gzipOut;
@@ -55,7 +52,7 @@ public class ContentCache {
 		}
 	}
 
-	private static String unzip(byte[] bytes) {
+	private String unzip(byte[] bytes) {
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
 		try {
@@ -70,5 +67,20 @@ public class ContentCache {
 			throw new RuntimeException(e);
 		}
 	}
+	
+	
+	private void addShutdownHook() {
+		Thread localShutdownHook = new Thread() {
+			@Override
+			public void run() {
+				synchronized (this) {
+					cm.shutdown();
+				}
+			}
+		};
+		Runtime.getRuntime().addShutdownHook(localShutdownHook);
+	}
+
+	
 
 }

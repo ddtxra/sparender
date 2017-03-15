@@ -71,6 +71,7 @@ public abstract class ObjectPool<T>
         return object;
     }
 
+    
     /**
      * Returns object back to the pool.
      *
@@ -88,7 +89,11 @@ public abstract class ObjectPool<T>
      * Shutdown this pool.
      */
     public void shutdown() {
-        if (executorService != null) {
+    	for(T o : pool){
+    		shutdownObject(o);
+    	}
+    	
+    	if (executorService != null) {
             executorService.shutdown();
         }
     }
@@ -99,6 +104,7 @@ public abstract class ObjectPool<T>
      * @return T new object
      */
     protected abstract T createObject();
+    protected abstract void shutdownObject(T object);
 
     private void initialize(final int minIdle) {
         pool = new ConcurrentLinkedQueue<T>();
