@@ -1,4 +1,4 @@
-package dsoluti.seo;
+package com.sparender;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;

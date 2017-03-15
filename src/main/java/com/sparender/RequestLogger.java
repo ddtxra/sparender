@@ -1,4 +1,4 @@
-package dsoluti.seo;
+package com.sparender;
 
 import java.net.InetSocketAddress;
 import java.text.DateFormat;
@@ -8,8 +8,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -20,10 +18,12 @@ import org.graylog2.gelfclient.GelfMessage;
 import org.graylog2.gelfclient.GelfMessageBuilder;
 import org.graylog2.gelfclient.GelfTransports;
 import org.graylog2.gelfclient.transport.GelfTransport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RequestLogger {
 
-	private static final Logger LOGGER = Logger.getLogger(RequestLogger.class.getName());
+	final Logger LOGGER = LoggerFactory.getLogger(RequestLogger.class);
 
 	private final DateFormat dateTimeFormat = createRFC1123DateTimeFormatter();
 
@@ -86,13 +86,13 @@ public class RequestLogger {
 			keyValueFields.put("status", status);
 
 			if (status >= 500) {
-				LOGGER.log(Level.SEVERE, message);
+				LOGGER.error(message);
 				keyValueFields.put("level", "error");
 			} else if (status >= 400) {
-				LOGGER.log(Level.WARNING, message);
+				LOGGER.warn(message);
 				keyValueFields.put("level", "warning");
 			} else {
-				LOGGER.log(Level.INFO, message);
+				LOGGER.info(message);
 				keyValueFields.put("level", "info");
 			}
 

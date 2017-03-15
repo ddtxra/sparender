@@ -67,6 +67,7 @@
   <classpathentry kind="var" path="M2_REPO/org/eclipse/jetty/websocket/websocket-api/9.2.20.v20161216/websocket-api-9.2.20.v20161216.jar"/>
   <classpathentry kind="var" path="M2_REPO/net/sf/ehcache/ehcache/2.9.0/ehcache-2.9.0.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/slf4j/slf4j-api/1.7.7/slf4j-api-1.7.7.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/slf4j/slf4j-simple/1.7.24/slf4j-simple-1.7.24.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/graylog2/gelfclient/1.4.0/gelfclient-1.4.0.jar"/>
   <classpathentry kind="var" path="M2_REPO/io/netty/netty-all/4.0.29.Final/netty-all-4.0.29.Final.jar"/>
   <classpathentry kind="var" path="M2_REPO/com/fasterxml/jackson/core/jackson-core/2.5.4/jackson-core-2.5.4.jar"/>

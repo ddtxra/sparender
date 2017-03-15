@@ -1,4 +1,4 @@
-package dsoluti.seo;
+package com.sparender;
 
 import java.io.BufferedReader;
 import java.nio.file.Files;

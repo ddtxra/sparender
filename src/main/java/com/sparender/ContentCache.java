@@ -1,4 +1,4 @@
-package dsoluti.seo;
+package com.sparender;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

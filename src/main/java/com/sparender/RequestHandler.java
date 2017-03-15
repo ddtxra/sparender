@@ -1,10 +1,8 @@
-package dsoluti.seo;
+package com.sparender;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -13,10 +11,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RequestHandler extends AbstractHandler implements Handler {
 
-	private static final Logger LOGGER = Logger.getLogger(RequestHandler.class.getName());
+	final Logger LOGGER = LoggerFactory.getLogger(RequestHandler.class);
 
 	private SeleniumRenderer seleniumRenderer;
 	private RequestLogger logger;
@@ -44,7 +44,7 @@ public class RequestHandler extends AbstractHandler implements Handler {
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 			if (!requestUrl.startsWith("favicon.ico")) {
 				out.println("Expecting a URL starting with http at this stage, got:" + requestUrl);
-				LOGGER.log(Level.FINER, "Responding with bad request for " + requestUrl);
+				LOGGER.debug("Responding with bad request for " + requestUrl);
 			}
 
 		} else {

@@ -1,4 +1,4 @@
-package dsoluti.seo;
+package com.sparender;
 
 import java.net.MalformedURLException;
 import java.net.URL;

@@ -4,13 +4,13 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>dsoluti.seo</groupId>
-	<artifactId>vertx--selenium-server</artifactId>
+	<groupId>sparender.com</groupId>
+	<artifactId>sparender</artifactId>
 	<version>1.0.0</version>
 
 	<properties>
 		<!-- the main class -->
-		<exec.mainClass>dsoluti.seo.App</exec.mainClass>
+		<exec.mainClass>com.sparender.App</exec.mainClass>
 	</properties>
 
 	<dependencies>
@@ -31,6 +31,12 @@
 			<groupId>net.sf.ehcache</groupId>
 			<artifactId>ehcache</artifactId>
 			<version>2.9.0</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-simple -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<version>1.7.24</version>
 		</dependency>
 		<dependency>
 			<groupId>org.graylog2</groupId>

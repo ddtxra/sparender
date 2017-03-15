@@ -1,4 +1,4 @@
-package dsoluti.seo;
+package com.sparender;
 
 import java.io.IOException;
 import java.util.concurrent.Callable;
@@ -16,15 +16,15 @@ public class SeleniumRenderer {
 
 	public static final Integer TIME_TO_WAIT_FOR_RENDER = 2000;
 
+	static final int DRIVER_POOL = Integer.valueOf(App.prop.get("driver.pool"));
 	private DriverPool driverPool;
-	private final ExecutorService pool = Executors.newFixedThreadPool(1);
+	private final ExecutorService pool = Executors.newFixedThreadPool(DRIVER_POOL);
 	public static String base = "https://www.nextprot.org";
 	private ContentCache cache;
 
 	public SeleniumRenderer(ContentCache cache) {
-		System.err.println("Starting driver pool");
-		driverPool = new DriverPool(1);
-		System.err.println("Pool started");
+		driverPool = new DriverPool(DRIVER_POOL);
+		System.err.println("Pool started with " + DRIVER_POOL + " drivers");
 		this.cache = cache;
 		addShutdownHook();
 	}
