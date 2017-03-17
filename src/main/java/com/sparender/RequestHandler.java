@@ -37,7 +37,7 @@ public class RequestHandler extends AbstractHandler implements Handler {
 		response.setStatus(HttpServletResponse.SC_OK);
 		
 		PrintWriter out = response.getWriter();
-		Optional<String> contentString = Optional.empty();
+		String content = null;
 		
 		final String requestUrl = getFullURL(request).substring(1).replace("?_escaped_fragment_=", "");
 
@@ -58,13 +58,13 @@ public class RequestHandler extends AbstractHandler implements Handler {
 
 				if (cache.contentExists(requestUrl)) {
 					cacheHit = true;
-					contentString = Optional.of(cache.getContent(requestUrl));
+					content = cache.getContent(requestUrl);
 				} else {
-					Future<String> content = seleniumRenderer.startRendering(requestUrl);
-					contentString = Optional.of(content.get());
+					content = seleniumRenderer.startRendering(requestUrl);
 				}
 
 			} catch (Exception e) {
+				e.printStackTrace();
 				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 				out.println("Failed to render " + requestUrl + " " + e.getMessage());
 			}
@@ -74,10 +74,10 @@ public class RequestHandler extends AbstractHandler implements Handler {
 		Integer contentLength = 0;
 		Integer bytes = 0;
 		
-		if(contentString.isPresent()){
-			out.println(contentString.get());
-			contentLength = contentString.get().length();
-			bytes = contentString.get().getBytes("UTF-8").length;
+		if(content != null){
+			out.println(content);
+			contentLength = content.length();
+			bytes = content.getBytes("UTF-8").length;
 		}
 
 		logger.log(request, response, requestUrl, contentLength, bytes, cacheHit, start);
