@@ -44,45 +44,54 @@ public class SeleniumRenderer {
 
 				if (!cache.contentExists(requestedUrl)) {
 
-					LOGGER.info("Starting to render" + requestedUrl);
+					WebDriver driver = null;
+					try {
 
-					final long start = System.currentTimeMillis();
+						LOGGER.info("Starting to render" + requestedUrl);
 
-					WebDriver driver = driverPool.borrowObject();
-					driver.get(requestedUrl);
+						final long start = System.currentTimeMillis();
 
-					sleep(1000);
+						driver = driverPool.borrowObject();
+						LOGGER.info("Got the driver for" + requestedUrl);
 
-					/*
-					 * try { // Waits for active connections to finish (new
-					 * WebDriverWait(driver, 50, 1000)).until(new
-					 * ExpectedCondition<Boolean>() { public Boolean
-					 * apply(WebDriver d) { System.err.println("Waiting since "
-					 * + (System.currentTimeMillis() - start) + " ms"); // TODO
-					 * only works with jQuery now, should be // optimised Object
-					 * o = ((JavascriptExecutor)
-					 * d).executeScript("return ((jQuery)? jQuery.active : 0)");
-					 * return o.equals(0L); } });
-					 * 
-					 * } catch (org.openqa.selenium.TimeoutException timeout) {
-					 * System.err.println("Not finished ... after timeout !!! "
-					 * ); }
-					 */
+						driver.get(requestedUrl);
+						LOGGER.info("Finished to driver.get for" + requestedUrl);
 
-					String content = driver.getPageSource();
+						sleep(1000);
 
-					String contentWithoutJs = content.replaceAll("<script(.|\n)*?</script>", "");
-					String contentWithoutJsAndHtmlImport = contentWithoutJs.replaceAll("<link rel=\"import\".*/>", "");
-					String contentWithoutJsAndHtmlImportAndIframes = contentWithoutJsAndHtmlImport.replaceAll("<iframe .*</iframe>", "");
-					String contentWithCorrectBase = contentWithoutJsAndHtmlImportAndIframes.replaceAll("(<base.*?>)", "<base href=\"" + base + "\"/>");
+						/*
+						 * try { // Waits for active connections to finish (new
+						 * WebDriverWait(driver, 50, 1000)).until(new
+						 * ExpectedCondition<Boolean>() { public Boolean
+						 * apply(WebDriver d) { System.err.println("Waiting since "
+						 * + (System.currentTimeMillis() - start) + " ms"); // TODO
+						 * only works with jQuery now, should be // optimised Object
+						 * o = ((JavascriptExecutor)
+						 * d).executeScript("return ((jQuery)? jQuery.active : 0)");
+						 * return o.equals(0L); } });
+						 * 
+						 * } catch (org.openqa.selenium.TimeoutException timeout) {
+						 * System.err.println("Not finished ... after timeout !!! "
+						 * ); }
+						 */
 
-					String finalContent = contentWithCorrectBase;
+						String content = driver.getPageSource();
 
-					driverPool.returnObject(driver);
+						String contentWithoutJs = content.replaceAll("<script(.|\n)*?</script>", "");
+						String contentWithoutJsAndHtmlImport = contentWithoutJs.replaceAll("<link rel=\"import\".*/>", "");
+						String contentWithoutJsAndHtmlImportAndIframes = contentWithoutJsAndHtmlImport.replaceAll("<iframe .*</iframe>", "");
+						String contentWithCorrectBase = contentWithoutJsAndHtmlImportAndIframes.replaceAll("(<base.*?>)", "<base href=\"" + base + "\"/>");
 
-					LOGGER.info("Finished rendering " + requestedUrl + " in " + (System.currentTimeMillis() - start) + " ms");
+						String finalContent = contentWithCorrectBase;
 
-					cache.putContent(requestedUrl, finalContent);
+
+						LOGGER.info("Finished rendering " + requestedUrl + " in " + (System.currentTimeMillis() - start) + " ms");
+
+						cache.putContent(requestedUrl, finalContent);
+
+					}finally {
+						driverPool.returnObject(driver);
+					}
 				}
 
 				return cache.getContent(requestedUrl);

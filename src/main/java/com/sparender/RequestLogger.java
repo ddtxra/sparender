@@ -81,6 +81,7 @@ public class RequestLogger {
 			keyValueFields.put("referrer", referrer);
 			keyValueFields.put("user-agent", userAgent);
 			keyValueFields.put("elpased-time", elapsedTime);
+			keyValueFields.put("elpased-time-seconds", (int) ((elapsedTime / 1000.0)));
 			keyValueFields.put("hit-cache", cacheHit);
 			
 			Enumeration<String> requestHeaders = request.getHeaderNames();
