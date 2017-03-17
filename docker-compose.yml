@@ -12,28 +12,3 @@ services:
     image: "selenium/standalone-chrome"
     ports:
       - "4444:4444"
-  some-mongo:
-    image: "mongo:3"
-    volumes:
-      - "./graylog/data/mongo:/data/db"
-  some-elasticsearch:
-    image: "elasticsearch:2"
-    command: "elasticsearch -Des.cluster.name='graylog'"
-    volumes:
-      - "./graylog/data/elasticsearch:/usr/share/elasticsearch/data"
-  graylog:
-    image: graylog2/server:2.1.1-1
-    volumes:
-      - "./graylog/data/journal:/usr/share/graylog/data/journal"
-      - "./graylog/config:/usr/share/graylog/data/config"
-    environment:
-      GRAYLOG_PASSWORD_SECRET: somepasswordpepper
-      GRAYLOG_ROOT_PASSWORD_SHA2: 8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918
-      GRAYLOG_WEB_ENDPOINT_URI: http://nextp-vm2b.vital-it.ch:9000/api
-    links:
-      - some-mongo:mongo
-      - some-elasticsearch:elasticsearch
-    ports:
-      - "9000:9000"
-      - "12201/udp:12201/udp"
-      - "5556/udp:5556/udp"
