@@ -92,7 +92,7 @@ public class SeleniumRenderer {
 					}finally {
 						
 						if(webdriver != null){
-							webdriver.close();
+							webdriver.quit();
 						}
 					}
 				}
