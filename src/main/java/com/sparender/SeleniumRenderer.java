@@ -7,6 +7,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.openqa.selenium.WebDriver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Simple HTTP Server that renders HTML pages using Selenium.
@@ -18,9 +20,12 @@ public class SeleniumRenderer {
 
 	static final int DRIVER_POOL = Integer.valueOf(App.prop.get("driver.pool"));
 	private DriverPool driverPool;
+	
 	private final ExecutorService pool = Executors.newFixedThreadPool(DRIVER_POOL);
 	public static String base = "https://www.nextprot.org";
 	private ContentCache cache;
+
+	final Logger LOGGER = LoggerFactory.getLogger(RequestLogger.class);
 
 	public SeleniumRenderer(ContentCache cache) {
 		driverPool = new DriverPool(DRIVER_POOL);
@@ -30,18 +35,21 @@ public class SeleniumRenderer {
 	}
 
 	public Future<String> startRendering(final String requestedUrl) throws IOException {
+
+		LOGGER.info("Requesting to render" + requestedUrl + " ms");
+
 		return pool.submit(new Callable<String>() {
 			@Override
 			public String call() throws Exception {
 
 				if (!cache.contentExists(requestedUrl)) {
 
+					LOGGER.info("Starting to render" + requestedUrl);
+
 					final long start = System.currentTimeMillis();
 
 					WebDriver driver = driverPool.borrowObject();
-					System.err.println("Starting to get the page " + (System.currentTimeMillis() - start) + " ms");
 					driver.get(requestedUrl);
-					System.err.println("Time to get the page " + (System.currentTimeMillis() - start) + " ms");
 
 					sleep(1000);
 
@@ -72,7 +80,7 @@ public class SeleniumRenderer {
 
 					driverPool.returnObject(driver);
 
-					System.err.println("Finished in " + (System.currentTimeMillis() - start) + " ms");
+					LOGGER.info("Finished rendering " + requestedUrl + " in " + (System.currentTimeMillis() - start) + " ms");
 
 					cache.putContent(requestedUrl, finalContent);
 				}

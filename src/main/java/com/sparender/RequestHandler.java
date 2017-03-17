@@ -12,7 +12,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
-import org.eclipse.jetty.websocket.common.events.annotated.OptionalSessionCallableMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,8 +40,6 @@ public class RequestHandler extends AbstractHandler implements Handler {
 		Optional<String> contentString = Optional.empty();
 		
 		final String requestUrl = getFullURL(request).substring(1).replace("?_escaped_fragment_=", "");
-
-		//LOGGER.log(Level.INFO, "Received a new request: " + target);
 
 		if (!requestUrl.startsWith("http")) {
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
