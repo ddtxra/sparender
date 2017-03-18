@@ -48,7 +48,7 @@ public class RequestLogger {
 		this.transport = GelfTransports.create(config);
 	}
 
-	public void log(HttpServletRequest request, HttpServletResponse response, String fullUrl, Integer contentLength, Integer bytes, boolean cacheHit, long startTime){
+	public void log(HttpServletRequest request, HttpServletResponse response, String fullUrl, Integer contentLength, Integer bytes, boolean cacheHit, long startTime, String errorMessage){
 
 		try {
 			
@@ -83,6 +83,7 @@ public class RequestLogger {
 			keyValueFields.put("elpased-time", elapsedTime);
 			keyValueFields.put("elpased-time-seconds", (int) ((elapsedTime / 1000.0)));
 			keyValueFields.put("hit-cache", cacheHit);
+			keyValueFields.put("error-message", errorMessage);
 			
 			Enumeration<String> requestHeaders = request.getHeaderNames();
 			while(requestHeaders.hasMoreElements()){

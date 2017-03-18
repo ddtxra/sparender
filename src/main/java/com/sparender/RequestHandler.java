@@ -32,6 +32,7 @@ public class RequestHandler extends AbstractHandler implements Handler {
 
 		boolean cacheHit = true;
 		long start = System.currentTimeMillis();
+		String errorMessage = null;
 		response.setContentType("text/html; charset=utf-8");
 		response.setStatus(HttpServletResponse.SC_OK);
 
@@ -58,13 +59,16 @@ public class RequestHandler extends AbstractHandler implements Handler {
 					content = seleniumRenderer.render(requestUrl);
 					cache.putContent(requestUrl, content);
 					cacheHit = false;
+				}else {
+					content = cache.getContent(requestUrl);
 				}
 
-				content = cache.getContent(requestUrl);
 
 			} catch (Exception e) {
+				cacheHit = false;
 				e.printStackTrace();
-				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+				errorMessage = e.getMessage();
+				response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
 				out.println("Failed to render " + requestUrl + " " + e.getMessage());
 			}
 
@@ -79,7 +83,7 @@ public class RequestHandler extends AbstractHandler implements Handler {
 			bytes = content.getBytes("UTF-8").length;
 		}
 
-		logger.log(request, response, requestUrl, contentLength, bytes, cacheHit, start);
+		logger.log(request, response, requestUrl, contentLength, bytes, cacheHit, start, errorMessage);
 
 		baseRequest.setHandled(true);
 	}
