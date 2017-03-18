@@ -2,8 +2,6 @@ package com.sparender;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Optional;
-import java.util.concurrent.Future;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -25,20 +23,21 @@ public class RequestHandler extends AbstractHandler implements Handler {
 
 	public RequestHandler() {
 		cache = new ContentCache();
-		seleniumRenderer = new SeleniumRenderer(cache);
+		seleniumRenderer = new SeleniumRenderer();
 		logger = new RequestLogger();
 	}
 
-	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
+			throws IOException, ServletException {
 
-		boolean cacheHit = false;
+		boolean cacheHit = true;
 		long start = System.currentTimeMillis();
 		response.setContentType("text/html; charset=utf-8");
 		response.setStatus(HttpServletResponse.SC_OK);
-		
+
 		PrintWriter out = response.getWriter();
 		String content = null;
-		
+
 		final String requestUrl = getFullURL(request).substring(1).replace("?_escaped_fragment_=", "");
 
 		if (!requestUrl.startsWith("http")) {
@@ -47,21 +46,21 @@ public class RequestHandler extends AbstractHandler implements Handler {
 				out.println("Expecting a URL starting with http at this stage, got:" + requestUrl);
 				LOGGER.info("Responding with bad request for " + requestUrl);
 			}
-			
+
 			baseRequest.setHandled(true);
 			return;
-
 
 		} else {
 
 			try {
 
-				if (cache.contentExists(requestUrl)) {
-					cacheHit = true;
-					content = cache.getContent(requestUrl);
-				} else {
-					content = seleniumRenderer.startRendering(requestUrl);
+				if (!cache.contentExists(requestUrl)) {
+					content = seleniumRenderer.render(requestUrl);
+					cache.putContent(requestUrl, content);
+					cacheHit = false;
 				}
+
+				content = cache.getContent(requestUrl);
 
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -70,11 +69,11 @@ public class RequestHandler extends AbstractHandler implements Handler {
 			}
 
 		}
-		
+
 		Integer contentLength = 0;
 		Integer bytes = 0;
-		
-		if(content != null){
+
+		if (content != null) {
 			out.println(content);
 			contentLength = content.length();
 			bytes = content.getBytes("UTF-8").length;
@@ -84,16 +83,15 @@ public class RequestHandler extends AbstractHandler implements Handler {
 
 		baseRequest.setHandled(true);
 	}
-	
-	
-	private static String getFullURL(HttpServletRequest request) {
-	    String requestURL = request.getPathInfo();
-	    String queryString = request.getQueryString();
 
-	    if (queryString == null) {
-	        return requestURL.toString();
-	    } else {
-	        return requestURL + '?'  + queryString;
-	    }
+	private static String getFullURL(HttpServletRequest request) {
+		String requestURL = request.getPathInfo();
+		String queryString = request.getQueryString();
+
+		if (queryString == null) {
+			return requestURL.toString();
+		} else {
+			return requestURL + '?' + queryString;
+		}
 	}
 }

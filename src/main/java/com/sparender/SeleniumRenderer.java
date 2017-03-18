@@ -2,11 +2,6 @@ package com.sparender;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -22,106 +17,65 @@ public class SeleniumRenderer {
 
 	public static final Integer TIME_TO_WAIT_FOR_RENDER = 2000;
 
-	static final int DRIVER_POOL = Integer.valueOf(App.prop.get("driver.pool"));
 	static final String SELENIUM_URL = App.prop.get("selenium.url");
-
-	private final ExecutorService pool = Executors.newFixedThreadPool(DRIVER_POOL);
 	public static String base = "https://www.nextprot.org";
-	private ContentCache cache;
 
 	final Logger LOGGER = LoggerFactory.getLogger(RequestLogger.class);
 
-	public SeleniumRenderer(ContentCache cache) {
-		this.cache = cache;
-	}
+	public String render(final String requestedUrl) throws IOException {
 
-	public Future<String> requestARendering(final String requestedUrl) throws IOException {
-	
-		return  pool.submit(new Callable<String>() {
-			@Override
-			public String call() throws Exception {
+		WebDriver webdriver = null;
+		try {
 
-				if (!cache.contentExists(requestedUrl)) {
+			LOGGER.info("Starting to render" + requestedUrl);
 
-					WebDriver webdriver = null;
-					try {
+			final long start = System.currentTimeMillis();
 
-						LOGGER.info("Starting to render" + requestedUrl);
+			webdriver = new RemoteWebDriver(new URL(SELENIUM_URL), DesiredCapabilities.chrome());
 
-						final long start = System.currentTimeMillis();
+			LOGGER.info("Got the driver for " + requestedUrl);
 
-						webdriver = new RemoteWebDriver(new URL(SELENIUM_URL), DesiredCapabilities.chrome());
+			webdriver.get(requestedUrl);
+			LOGGER.info("Finished to driver.get for " + requestedUrl);
 
-						LOGGER.info("Got the driver for " + requestedUrl);
+			sleep(TIME_TO_WAIT_FOR_RENDER);
 
-						webdriver.get(requestedUrl);
-						LOGGER.info("Finished to driver.get for " + requestedUrl);
+			/*
+			 * try { // Waits for active connections to finish (new
+			 * WebDriverWait(driver, 50, 1000)).until(new
+			 * ExpectedCondition<Boolean>() { public Boolean apply(WebDriver d)
+			 * { System.err.println("Waiting since " +
+			 * (System.currentTimeMillis() - start) + " ms"); // TODO only works
+			 * with jQuery now, should be // optimised Object o =
+			 * ((JavascriptExecutor)
+			 * d).executeScript("return ((jQuery)? jQuery.active : 0)"); return
+			 * o.equals(0L); } });
+			 * 
+			 * } catch (org.openqa.selenium.TimeoutException timeout) {
+			 * System.err.println("Not finished ... after timeout !!! " ); }
+			 */
 
-						sleep(1000);
+			String content = webdriver.getPageSource();
 
-						/*
-						 * try { // Waits for active connections to finish (new
-						 * WebDriverWait(driver, 50, 1000)).until(new
-						 * ExpectedCondition<Boolean>() { public Boolean
-						 * apply(WebDriver d) { System.err.println("Waiting since "
-						 * + (System.currentTimeMillis() - start) + " ms"); // TODO
-						 * only works with jQuery now, should be // optimised Object
-						 * o = ((JavascriptExecutor)
-						 * d).executeScript("return ((jQuery)? jQuery.active : 0)");
-						 * return o.equals(0L); } });
-						 * 
-						 * } catch (org.openqa.selenium.TimeoutException timeout) {
-						 * System.err.println("Not finished ... after timeout !!! "
-						 * ); }
-						 */
+			String contentWithoutJs = content.replaceAll("<script(.|\n)*?</script>", "");
+			String contentWithoutJsAndHtmlImport = contentWithoutJs.replaceAll("<link rel=\"import\".*/>", "");
+			String contentWithoutJsAndHtmlImportAndIframes = contentWithoutJsAndHtmlImport
+					.replaceAll("<iframe .*</iframe>", "");
+			String contentWithCorrectBase = contentWithoutJsAndHtmlImportAndIframes.replaceAll("(<base.*?>)",
+					"<base href=\"" + base + "\"/>");
 
-						String content = webdriver.getPageSource();
+			String finalContent = contentWithCorrectBase;
 
-						String contentWithoutJs = content.replaceAll("<script(.|\n)*?</script>", "");
-						String contentWithoutJsAndHtmlImport = contentWithoutJs.replaceAll("<link rel=\"import\".*/>", "");
-						String contentWithoutJsAndHtmlImportAndIframes = contentWithoutJsAndHtmlImport.replaceAll("<iframe .*</iframe>", "");
-						String contentWithCorrectBase = contentWithoutJsAndHtmlImportAndIframes.replaceAll("(<base.*?>)", "<base href=\"" + base + "\"/>");
+			LOGGER.info("Finished rendering " + requestedUrl + " in " + (System.currentTimeMillis() - start) + " ms");
 
-						String finalContent = contentWithCorrectBase;
+			return finalContent;
 
+		} finally {
 
-						LOGGER.info("Finished rendering " + requestedUrl + " in " + (System.currentTimeMillis() - start) + " ms");
-
-						cache.putContent(requestedUrl, finalContent);
-
-					}finally {
-						
-						if(webdriver != null){
-							webdriver.quit();
-						}
-					}
-				}
-
-				return cache.getContent(requestedUrl);
-
+			if (webdriver != null) {
+				webdriver.quit();
 			}
-		});
-
-	}
-
-		
-		
-	public String startRendering(final String requestedUrl) throws IOException, InterruptedException, ExecutionException {
-
-		if (cache.contentExists(requestedUrl)) {
-			//Should not happen because it was checked before
-			LOGGER.info("Page was on cache " + requestedUrl);
-			return cache.getContent(requestedUrl);
-			
-		} else {
-			
-			LOGGER.info("Requesting to render" + requestedUrl + " ms");
-			Future<String> future = requestARendering(requestedUrl);
-			return future.get();
-			
 		}
-
-
 	}
 
 	private static void sleep(long ms) {
@@ -131,6 +85,5 @@ public class SeleniumRenderer {
 			throw new RuntimeException(e);
 		}
 	}
-
 
 }
