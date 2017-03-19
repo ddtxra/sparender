@@ -31,7 +31,7 @@ public class SeleniumRenderer {
 
 			final long start = System.currentTimeMillis();
 
-			webdriver = new RemoteWebDriver(new URL(SELENIUM_URL), DesiredCapabilities.firefox());
+			webdriver = new RemoteWebDriver(new URL(SELENIUM_URL), DesiredCapabilities.chrome());
 
 			LOGGER.info("Got the driver for " + requestedUrl);
 
