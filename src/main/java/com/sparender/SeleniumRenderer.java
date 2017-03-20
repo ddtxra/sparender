@@ -1,12 +1,10 @@
 package com.sparender;
 
 import java.io.IOException;
-import java.util.concurrent.TimeoutException;
 
 import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.spf4j.recyclable.ObjectBorrowException;
 import org.spf4j.recyclable.ObjectCreationException;
 import org.spf4j.recyclable.RecyclingSupplier;
 import org.spf4j.recyclable.impl.RecyclingSupplierBuilder;
@@ -25,7 +23,7 @@ public class SeleniumRenderer {
 
 	RecyclingSupplier<WebDriver> driverPool = null;
 
-	private int MAX_ATTEMPTS = 3;
+	private int MAX_ATTEMPTS = 10;
 	private int POOL_INITIAL_SIZE = 3;
 	private int POOL_MAX_SIZE = POOL_INITIAL_SIZE;
 	
@@ -58,6 +56,7 @@ public class SeleniumRenderer {
 				}catch (Exception exception){
 					driverPool.recycle(webdriver, exception);
 					retry++;
+					sleep(retry * 1000); //Sleep for retry seconds (if it is the second retry, then sleep 2 seconds)
 					LOGGER.error("Failed to retrieve " + requestedUrl + "  retrying ...  " + retry + " " + "class: " + exception.getClass() + exception.getMessage());
 				}
 			}
