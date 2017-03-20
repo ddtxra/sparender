@@ -25,6 +25,7 @@ public class SeleniumRenderer {
 
 	RecyclingSupplier<WebDriver> driverPool = null;
 
+	private int MAX_ATTEMPTS = 3;
 	private int POOL_INITIAL_SIZE = 3;
 	private int POOL_MAX_SIZE = POOL_INITIAL_SIZE;
 	
@@ -50,12 +51,26 @@ public class SeleniumRenderer {
 
 			LOGGER.info("Got the driver for " + requestedUrl);
 
-			webdriver.get(requestedUrl);
+			
+			int retry = 0;
+			boolean success = false;
+			while ((!success) && (retry < MAX_ATTEMPTS)){
+				try {
+					webdriver.get(requestedUrl);
+					success = true;
+				}catch (Exception exception){
+					driverPool.recycle(webdriver, exception);
+					retry++;
+					LOGGER.error("Failed to retrieve " + requestedUrl + "  retrying ...  " + retry + " " + "class: " + exception.getClass() + exception.getMessage());
+				}
+			}
+			
 			LOGGER.info("Finished to driver.get for " + requestedUrl);
+
+			sleep(TIME_TO_WAIT_FOR_RENDER);
 
 			String content = webdriver.getPageSource();
 
-			sleep(TIME_TO_WAIT_FOR_RENDER);
 
 			String contentWithoutJs = content.replaceAll("<script(.|\n)*?</script>", "");
 			String contentWithoutJsAndHtmlImport = contentWithoutJs.replaceAll("<link rel=\"import\".*/>", "");
@@ -80,7 +95,7 @@ public class SeleniumRenderer {
 		} catch (TimeoutException e) {
 			e.printStackTrace();
 			LOGGER.error("Timeout exception " + e.getLocalizedMessage());
-		} finally {
+		}finally {
 
 			driverPool.recycle(webdriver);
 		}
