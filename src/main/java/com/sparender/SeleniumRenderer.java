@@ -43,19 +43,16 @@ public class SeleniumRenderer {
 		WebDriver webdriver = null;
 		try {
 
-			LOGGER.info("Starting to render" + requestedUrl);
-
+			LOGGER.info("Requesting to render" + requestedUrl);
 			final long start = System.currentTimeMillis();
 
-			webdriver = driverPool.get();
-
-			LOGGER.info("Got the driver for " + requestedUrl);
-
-			
 			int retry = 0;
 			boolean success = false;
 			while ((!success) && (retry < MAX_ATTEMPTS)){
 				try {
+					LOGGER.info("Trying to get a driver " + requestedUrl);
+					webdriver = driverPool.get();
+					LOGGER.info("Got the driver for " + requestedUrl);
 					webdriver.get(requestedUrl);
 					success = true;
 				}catch (Exception exception){
@@ -81,20 +78,8 @@ public class SeleniumRenderer {
 
 			finalContent = contentWithCorrectBase;
 
-			LOGGER.info("Finished rendering " + requestedUrl + " in " + (System.currentTimeMillis() - start) + " ms");
+			LOGGER.info("Finished rendering " + requestedUrl + " in " + (System.currentTimeMillis() - start) + " ms after " + retry + " retrials");
 
-		} catch (ObjectCreationException e) {
-			e.printStackTrace();
-			LOGGER.error("Failed to create driver " + e.getLocalizedMessage());
-		} catch (ObjectBorrowException e) {
-			e.printStackTrace();
-			LOGGER.error("Failed to borrow driver " + e.getLocalizedMessage());
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-			LOGGER.error("Interrupt exception " + e.getLocalizedMessage());
-		} catch (TimeoutException e) {
-			e.printStackTrace();
-			LOGGER.error("Timeout exception " + e.getLocalizedMessage());
 		}finally {
 
 			driverPool.recycle(webdriver);
