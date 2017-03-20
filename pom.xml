@@ -43,6 +43,13 @@
 			<artifactId>gelfclient</artifactId>
 			<version>1.4.0</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.spf4j/spf4j-core -->
+		<dependency>
+			<groupId>org.spf4j</groupId>
+			<artifactId>spf4j-core</artifactId>
+			<version>8.2.11</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
