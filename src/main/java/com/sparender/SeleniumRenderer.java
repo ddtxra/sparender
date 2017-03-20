@@ -24,6 +24,7 @@ public class SeleniumRenderer {
 
 	public String render(final String requestedUrl) throws IOException {
 
+		String finalContent = null;
 		WebDriver webdriver = null;
 		try {
 
@@ -38,44 +39,30 @@ public class SeleniumRenderer {
 			webdriver.get(requestedUrl);
 			LOGGER.info("Finished to driver.get for " + requestedUrl);
 
-			sleep(TIME_TO_WAIT_FOR_RENDER);
-
-			/*
-			 * try { // Waits for active connections to finish (new
-			 * WebDriverWait(driver, 50, 1000)).until(new
-			 * ExpectedCondition<Boolean>() { public Boolean apply(WebDriver d)
-			 * { System.err.println("Waiting since " +
-			 * (System.currentTimeMillis() - start) + " ms"); // TODO only works
-			 * with jQuery now, should be // optimised Object o =
-			 * ((JavascriptExecutor)
-			 * d).executeScript("return ((jQuery)? jQuery.active : 0)"); return
-			 * o.equals(0L); } });
-			 * 
-			 * } catch (org.openqa.selenium.TimeoutException timeout) {
-			 * System.err.println("Not finished ... after timeout !!! " ); }
-			 */
-
 			String content = webdriver.getPageSource();
+
+			sleep(TIME_TO_WAIT_FOR_RENDER);
 
 			String contentWithoutJs = content.replaceAll("<script(.|\n)*?</script>", "");
 			String contentWithoutJsAndHtmlImport = contentWithoutJs.replaceAll("<link rel=\"import\".*/>", "");
-			String contentWithoutJsAndHtmlImportAndIframes = contentWithoutJsAndHtmlImport
-					.replaceAll("<iframe .*</iframe>", "");
-			String contentWithCorrectBase = contentWithoutJsAndHtmlImportAndIframes.replaceAll("(<base.*?>)",
-					"<base href=\"" + base + "\"/>");
+			String contentWithoutJsAndHtmlImportAndIframes = contentWithoutJsAndHtmlImport.replaceAll("<iframe .*</iframe>", "");
+			String contentWithCorrectBase = contentWithoutJsAndHtmlImportAndIframes.replaceAll("(<base.*?>)", "<base href=\"" + base + "\"/>");
 
-			String finalContent = contentWithCorrectBase;
+			finalContent = contentWithCorrectBase;
 
 			LOGGER.info("Finished rendering " + requestedUrl + " in " + (System.currentTimeMillis() - start) + " ms");
 
-			return finalContent;
 
 		} finally {
 
 			if (webdriver != null) {
+				webdriver.close();
 				webdriver.quit();
 			}
 		}
+		
+		return finalContent;
+
 	}
 
 	private static void sleep(long ms) {
@@ -85,5 +72,25 @@ public class SeleniumRenderer {
 			throw new RuntimeException(e);
 		}
 	}
+	
+	
+	
+	
+
+	/*
+	 * try { // Waits for active connections to finish (new
+	 * WebDriverWait(driver, 50, 1000)).until(new
+	 * ExpectedCondition<Boolean>() { public Boolean apply(WebDriver d)
+	 * { System.err.println("Waiting since " +
+	 * (System.currentTimeMillis() - start) + " ms"); // TODO only works
+	 * with jQuery now, should be // optimised Object o =
+	 * ((JavascriptExecutor)
+	 * d).executeScript("return ((jQuery)? jQuery.active : 0)"); return
+	 * o.equals(0L); } });
+	 * 
+	 * } catch (org.openqa.selenium.TimeoutException timeout) {
+	 * System.err.println("Not finished ... after timeout !!! " ); }
+	 */
+
 
 }
