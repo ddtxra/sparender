@@ -56,6 +56,7 @@ public class SeleniumRenderer {
 		} finally {
 
 			if (webdriver != null) {
+				LOGGER.info("Closing and quiting ... ");
 				webdriver.close();
 				webdriver.quit();
 			}
