@@ -30,6 +30,8 @@ public class RequestHandler extends AbstractHandler implements Handler {
 	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
 			throws IOException, ServletException {
 
+		LOGGER.info("Handling new http request" + getFullURL(request));
+		
 		boolean cacheHit = true;
 		long start = System.currentTimeMillis();
 		String errorMessage = null;
