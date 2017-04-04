@@ -1,37 +1,37 @@
 package com.sparender;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
+
 public class RequestHandler extends AbstractHandler implements Handler {
 
 	final Logger LOGGER = LoggerFactory.getLogger(RequestHandler.class);
 
-	private SeleniumRenderer seleniumRenderer;
-	private RequestLogger logger;
-	private ContentCache cache;
+	private final Renderer renderer;
+	private final RequestLogger logger;
+	private final ContentCache cache;
+	private final Boolean cacheEnabled;
 
 	public RequestHandler() {
 		cache = new ContentCache();
-		seleniumRenderer = new SeleniumRenderer();
+		renderer = new SeleniumRenderer(); // new SeleniumRendererProto();
 		logger = new RequestLogger();
+		cacheEnabled = Boolean.valueOf(App.prop.get("cache.enabled"));
+		LOGGER.info("Cache " + ((cacheEnabled) ? "enabled" : "disabled") );
 	}
 
 	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
 			throws IOException, ServletException {
 
-		LOGGER.info("Handling new http request" + getFullURL(request));
-		
 		boolean cacheHit = true;
 		long start = System.currentTimeMillis();
 		String errorMessage = null;
@@ -41,7 +41,12 @@ public class RequestHandler extends AbstractHandler implements Handler {
 		PrintWriter out = response.getWriter();
 		String content = null;
 
-		final String requestUrl = getFullURL(request).substring(1).replace("?_escaped_fragment_=", "");
+		final String requestUrl = getFullURL(request).substring(1)
+				.replace("?_escaped_fragment_=", "")
+				.replace("&_escaped_fragment_=", "")
+				;
+
+		logger.logBefore(request, requestUrl);
 
 		if (!requestUrl.startsWith("http")) {
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -56,16 +61,15 @@ public class RequestHandler extends AbstractHandler implements Handler {
 		} else {
 
 			try {
-
-				if (!cache.contentExists(requestUrl)) {
-					content = seleniumRenderer.render(requestUrl);
+				if (!cacheEnabled || !cache.contentExists(requestUrl)) {
+					LOGGER.info("Requesting Selenium to render page " + requestUrl);
+					content = renderer.render(requestUrl);
 					cache.putContent(requestUrl, content);
 					cacheHit = false;
-				}else {
+				} else {
+					LOGGER.info("Hitting the cache for page " + requestUrl);
 					content = cache.getContent(requestUrl);
 				}
-
-
 			} catch (Exception e) {
 				cacheHit = false;
 				e.printStackTrace();
@@ -85,7 +89,7 @@ public class RequestHandler extends AbstractHandler implements Handler {
 			bytes = content.getBytes("UTF-8").length;
 		}
 
-		logger.log(request, response, requestUrl, contentLength, bytes, cacheHit, start, errorMessage);
+		logger.logAfter(request, response, requestUrl, contentLength, bytes, cacheHit, start, errorMessage);
 
 		baseRequest.setHandled(true);
 	}
