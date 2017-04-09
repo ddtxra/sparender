@@ -1,8 +1,5 @@
 package com.sparender;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
@@ -78,11 +75,13 @@ public class SeleniumRenderer implements Renderer {
 
 	private static String updatePageSource(String content, String baseUrl) {
 
-		String contentWithoutJs = content.replaceAll("<script(.|\n)*?</script>", "");
-		String contentWithoutJsAndHtmlImport = contentWithoutJs.replaceAll("<link rel=\"import\".*/>", "");
-		String contentWithoutJsAndHtmlImportAndIframes = contentWithoutJsAndHtmlImport.replaceAll("<iframe .*</iframe>",
-				"");
-		return contentWithoutJsAndHtmlImportAndIframes.replaceAll("(<base.*?>)", "<base href=\"" + baseUrl + "\"/>");
+		content = content.replaceAll("<script(.|\n)*?</script>", "");
+		content = content.replaceAll("<link rel=\"import\".*/>", "");
+		content = content.replaceAll("<iframe .*</iframe>","");
+		content = content.replaceAll("href=\"/","href=\"" +  baseUrl + "/");
+		content = content.replaceAll("href=\'/","href=\'" +  baseUrl + "/");
+		
+		return content.replaceAll("(<base.*?>)", "<base href=\"" + baseUrl + "\"/>");
 	}
 
 	private static void sleep(long ms) {
