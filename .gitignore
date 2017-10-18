@@ -1,6 +1,8 @@
 .project
 .classpath
 .settings
+.idea
+sparender.com.iml
 target
 cache
 graylog

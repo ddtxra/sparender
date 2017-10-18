@@ -3,6 +3,7 @@ package com.sparender;
 import org.eclipse.jetty.server.Server;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -10,11 +11,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Main class used for debug / IDE Launch Verticle with docker instead (try this
- * for debug) See documentation here:
- * http://vertx.io/docs/vertx-docker/#_deploying_a_java_verticle_in_a_docker_container
- * 
- * @author Daniel Teixeira http://github.com/ddtxra
+ * Main application class to start sparender https://github.com/sparender
+ *
+ * @author Daniel Teixeira https://github.com/ddtxra
  *
  */
 public class App {
@@ -22,6 +21,17 @@ public class App {
 	public static Map<String, String> prop = new HashMap<>();
 
 	public static void main(String[] args) throws Exception {
+
+		readPropertyFile();
+
+		Server server = new Server(8082);
+		server.setHandler(new RequestHandler());
+
+		server.start();
+		server.join();
+	}
+
+	private static void readPropertyFile() throws IOException {
 
 		Path path = Paths.get("config.properties");
 
@@ -33,10 +43,5 @@ public class App {
 			});
 		}
 
-		Server server = new Server(8082);
-		server.setHandler(new RequestHandler());
-
-		server.start();
-		server.join();
 	}
 }

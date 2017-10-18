@@ -80,7 +80,6 @@ public class ContentCache {
 		};
 		Runtime.getRuntime().addShutdownHook(localShutdownHook);
 	}
-
 	
 
 }
