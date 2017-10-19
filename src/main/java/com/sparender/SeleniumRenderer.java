@@ -85,7 +85,7 @@ public class SeleniumRenderer implements Renderer {
 	private static String updatePageSource(String content, String baseUrl) {
 
 		//Remove any javascript content
-		content = content.replaceAll("<script(.|\n)*?</script>", "");
+		content = content.replaceAll("<script[^¿]+?<\\/script>", "");
 
 		//Remove styling, really?
 		content = content.replaceAll("<link rel=\"import\".*/>", "");
